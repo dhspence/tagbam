@@ -46,7 +46,7 @@ char *parse_bed(char *s, int32_t *st_, int32_t *en_, struct amp *a_)
 }
 
 // read bed file into a cgranges object and also store an array of structs w/ amplicon name and strand.
-// The label field in the cgranges object is the index in the amplicon array with the name and strand for that amplicon  
+
 cgranges_t *read_bed(const char *fn, struct amp *a)
 {
 	gzFile fp;
@@ -80,7 +80,6 @@ int main(int argc, char *argv[])
   int verbose = 0;
   
  
-  int index;
   int c;
   opterr = 0;
   while ((c = getopt (argc, argv, "vd:")) != -1)
@@ -223,7 +222,7 @@ int main(int argc, char *argv[])
       if ((dat = bam_aux_get(b,"XN")) != NULL)
 	xn = bam_aux2Z(dat);
 
-      fprintf(stderr,"%s\t%lld\t%lld\t%s\t%d\t%s\t%s\t%d\t\%d\n", h->target_name[b->core.tid],st,en,bam_get_qname(b),strand,amplicons[besthit].name,xn,numhits,dist);
+      fprintf(stderr,"%s\t%lld\t%lld\t%s\t%d\t%s\t%s\t%d\t%d\n", h->target_name[b->core.tid],st,en,bam_get_qname(b),strand,amplicons[besthit].name,xn,numhits,dist);
     }
     
     // write to new bam
@@ -242,6 +241,9 @@ int main(int argc, char *argv[])
   fprintf(stderr,"tagged %d reads out of %d (%.2f%%) with maxDist=%d\n",readstagged,readcounter, (double)readstagged / (double)readcounter * 100.0, maxDist);
   
  clean:
+  for (int i=0; i<1000000; i++) {
+    free(amplicons[i].name);
+  }
   free(amplicons);
   cr_destroy(cr);
   bam_destroy1(b);
