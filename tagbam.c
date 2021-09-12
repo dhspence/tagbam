@@ -217,12 +217,12 @@ int main(int argc, char *argv[])
     if(verbose==1){
 
       // this is for development purposes--read in the XN tag, if present, and then print out the read data.
-      char *xn;
+      char *xn = ".";
       uint8_t* dat;
       if ((dat = bam_aux_get(b,"XN")) != NULL)
 	xn = bam_aux2Z(dat);
 
-      fprintf(stderr,"%s\t%lld\t%lld\t%s\t%d\t%s\t%s\t%d\t%d\n", h->target_name[b->core.tid],st,en,bam_get_qname(b),strand,amplicons[besthit].name,xn,numhits,dist);
+      fprintf(stdout,"%s\t%lld\t%lld\t%s\t%s\n", h->target_name[b->core.tid],st,en,bam_get_qname(b),xn);
     }
     
     // write to new bam
