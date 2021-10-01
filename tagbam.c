@@ -49,28 +49,30 @@ char *parse_bed(char *s, int32_t *st_, int32_t *en_, struct amp *a_)
 
 cgranges_t *read_bed(const char *fn, struct amp *a)
 {
-	gzFile fp;
-	cgranges_t *cr;
-	kstream_t *ks;
-	kstring_t str = {0,0,0};
-	int32_t k = 0;
-	if ((fp = gzopen(fn, "r")) == 0)
-		return 0;
-	ks = ks_init(fp);
-	cr = cr_init();
-	while (ks_getuntil(ks, KS_SEP_LINE, &str, 0) >= 0) {
-	  char *ctg;
-	  struct amp a1;
-	  int32_t st, en;
-	  ctg = parse_bed(str.s, &st, &en, &a1);
-	  if (ctg) cr_add(cr, ctg, st, en, k);
-	  a[k] = a1;
-	  k++;
-	}
-	free(str.s);
-	ks_destroy(ks);
-	gzclose(fp);
-	return cr;
+  gzFile fp;
+  cgranges_t *cr;
+  kstream_t *ks;
+  kstring_t str = {0,0,0};
+  int32_t k = 0;
+  if ((fp = gzopen(fn, "r")) == 0){
+    fprintf(stderr,"cannot open bed file: %s\n",fn);
+    return 0;
+  }
+  ks = ks_init(fp);
+  cr = cr_init();
+  while (ks_getuntil(ks, KS_SEP_LINE, &str, 0) >= 0) {
+    char *ctg;
+    struct amp a1;
+    int32_t st, en;
+    ctg = parse_bed(str.s, &st, &en, &a1);
+    if (ctg) cr_add(cr, ctg, st, en, k);
+    a[k] = a1;
+    k++;
+  }
+  free(str.s);
+  ks_destroy(ks);
+  gzclose(fp);
+  return cr;
 }
 
 int main(int argc, char *argv[])
@@ -131,9 +133,23 @@ int main(int argc, char *argv[])
   fprintf(stderr,"loading %s\n",inbam);
     
   // now open bam file
-  samFile *fpin = sam_open(inbam, "rb");
-  hts_idx_t *idx = sam_index_load(fpin, inbam);
-  bam_hdr_t *h = sam_hdr_read(fpin);
+  samFile *fpin;
+  if (!(fpin = sam_open(inbam, "rb"))) {
+    exit(1);
+  }
+  
+  hts_idx_t *idx;
+  if (!(idx = sam_index_load(fpin, inbam))) {
+    fprintf(stderr, "Couldn't index for: %s\n",inbam);
+    exit(1);
+  }
+  
+  bam_hdr_t *h;
+  if (!(h = sam_hdr_read(fpin))) {
+    fprintf(stderr, "Couldn't read header for: %s\n",inbam);
+    exit(1);
+  }
+  
   bam1_t *b = bam_init1();
   hts_itr_t *itr = sam_itr_querys(idx, h, ".");
 
