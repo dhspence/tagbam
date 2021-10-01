@@ -221,8 +221,12 @@ int main(int argc, char *argv[])
       uint8_t* dat;
       if ((dat = bam_aux_get(b,"XN")) != NULL)
 	xn = bam_aux2Z(dat);
-	
-      fprintf(stdout,"%s\t%lld\t%lld\t%s\t%s\n", sam_hdr_tid2name(h,b->core.tid),st,en,bam_get_qname(b),xn);
+
+      if(b->core.flag & BAM_FUNMAP) {
+	fprintf(stdout,"*\t*\t*\t%s\t%s\n", bam_get_qname(b),xn);
+      } else {
+	fprintf(stdout,"%s\t%lld\t%lld\t%s\t%s\n",sam_hdr_tid2name(h,b->core.tid),st,en,bam_get_qname(b),xn);
+      }
        
     }
     
